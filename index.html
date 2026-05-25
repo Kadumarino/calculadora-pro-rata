@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Pro-Rata - Massa de Testes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Calculadora Pro-Rata</h1>
+            <p class="subtitle">Calcule quando fazer o backdate para simular dias de pró-rata</p>
+        </header>
+
+        <div class="card">
+            <form id="proRataForm">
+                <div class="form-group">
+                    <label for="dataCriacao">
+                        🕐 Data de Criação da Massa (Opcional)
+                        <span class="tooltip">Quando a massa nasceu - deixe em branco para calcular (DD/MM/YYYY)</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="dataCriacao" 
+                        name="dataCriacao" 
+                        placeholder="DD/MM/YYYY"
+                        maxlength="10"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="dataCorte">
+                        📅 Data de Corte da Fatura
+                        <span class="tooltip">Quando a fatura fecha (DD/MM/YYYY)</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="dataCorte" 
+                        name="dataCorte" 
+                        placeholder="DD/MM/YYYY"
+                        maxlength="10"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="diasProRata">
+                        🔢 Dias de Pró-Rata (Opcional)
+                        <span class="tooltip">Quantos dias de consumo - deixe em branco se informou data de criação</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        id="diasProRata" 
+                        name="diasProRata" 
+                        min="1"
+                        max="365"
+                        placeholder="Ex: 5"
+                    >
+                </div>
+
+                <button type="submit" class="btn-calcular">
+                    ⚡ Calcular
+                </button>
+            </form>
+        </div>
+
+        <div id="resultado" class="resultado hidden">
+            <div class="resultado-header">
+                <h2>✅ Resultado</h2>
+            </div>
+            <div class="resultado-body">
+                <div class="info-row">
+                    <span class="label">Data de Criação/Backdate:</span>
+                    <span class="value highlight-value" id="displayCriacao">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Data de Corte:</span>
+                    <span class="value" id="displayCorte">-</span>
+                </div>
+                <div class="divider"></div>
+                <div class="info-row highlight">
+                    <span class="label">📍 Dias de Consumo (Pró-Rata):</span>
+                    <span class="value bold" id="displayDias">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Período de Faturamento:</span>
+                    <span class="value" id="displayPeriodo">-</span>
+                </div>
+            </div>
+            <div class="resultado-footer">
+                <p class="explicacao" id="explicacaoTexto">
+                    Faça o backdate da massa em <strong id="backdateTexto">-</strong> 
+                    para ter exatamente <strong id="diasTexto">-</strong> dias de consumo 
+                    até a data de corte (<strong id="corteTexto">-</strong>).
+                </p>
+                <button type="button" class="btn-copiar" id="btnCopiar">
+                    📋 Copiar Data de Criação/Backdate
+                </button>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 Desenvolvido para facilitar a criação de massa de testes em sistemas de faturamento</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
