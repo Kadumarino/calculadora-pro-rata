@@ -5,16 +5,36 @@ const btnCopiar = document.getElementById('btnCopiar');
 
 // Função para aplicar máscara de data DD/MM/YYYY
 function aplicarMascaraData(input) {
-    let valor = input.value.replace(/\D/g, ''); // Remove não-dígitos
+    // Guarda posição do cursor
+    const cursorPos = input.selectionStart;
+    const valorAnterior = input.value;
     
-    if (valor.length >= 2) {
-        valor = valor.substring(0, 2) + '/' + valor.substring(2);
+    // Remove tudo exceto dígitos
+    let apenasDigitos = input.value.replace(/\D/g, '');
+    
+    // Limita a 8 dígitos (DDMMAAAA)
+    apenasDigitos = apenasDigitos.substring(0, 8);
+    
+    // Formata progressivamente
+    let valorFormatado = '';
+    if (apenasDigitos.length > 0) {
+        valorFormatado = apenasDigitos.substring(0, 2); // DD
     }
-    if (valor.length >= 5) {
-        valor = valor.substring(0, 5) + '/' + valor.substring(5, 9);
+    if (apenasDigitos.length >= 3) {
+        valorFormatado += '/' + apenasDigitos.substring(2, 4); // MM
+    }
+    if (apenasDigitos.length >= 5) {
+        valorFormatado += '/' + apenasDigitos.substring(4, 8); // AAAA
     }
     
-    input.value = valor;
+    input.value = valorFormatado;
+    
+    // Ajusta cursor: se adicionou caractere, move cursor para frente
+    if (valorFormatado.length > valorAnterior.length) {
+        input.setSelectionRange(cursorPos + 1, cursorPos + 1);
+    } else {
+        input.setSelectionRange(cursorPos, cursorPos);
+    }
 }
 
 // Função para converter DD/MM/YYYY para objeto Date
@@ -61,97 +81,156 @@ function calcularDataBackdate(event) {
     event.preventDefault();
 
     // Capturar valores do formulário
-    const dataCriacaoInput = document.getElementById('dataCriacao').value.trim();
-    const dataCorteInput = document.getElementById('dataCorte').value.trim();
+    const diaCorteInput = document.getElementById('diaCorte').value.trim();
     const diasProRataInput = document.getElementById('diasProRata').value.trim();
+    const dataVencimentoInput = document.getElementById('dataVencimento').value.trim();
 
-    // Validar data de corte (obrigatória)
-    if (!dataCorteInput) {
-        alert('Por favor, informe a Data de Corte.');
+    // Validações obrigatórias
+    if (!diaCorteInput || !diasProRataInput) {
+        alert('Por favor, preencha Dia de Corte e Dias de Pró-Rata.');
         return;
     }
 
-    if (!validarFormatoData(dataCorteInput)) {
-        alert('Formato inválido na Data de Corte. Use DD/MM/YYYY');
+    const diaCorte = parseInt(diaCorteInput);
+    if (isNaN(diaCorte) || diaCorte < 1 || diaCorte > 31) {
+        alert('Dia de Corte deve ser entre 1 e 31.');
         return;
     }
 
-    const dataCorte = converterDataBRParaDate(dataCorteInput);
-    if (!dataCorte) {
-        alert('Data de Corte inválida.');
+    const diasProRata = parseInt(diasProRataInput);
+    if (isNaN(diasProRata) || diasProRata < 1) {
+        alert('Informe um número válido de dias de pró-rata.');
         return;
     }
 
-    // MODO 1: Data de Criação informada -> Calcular dias de consumo
-    if (dataCriacaoInput) {
-        if (!validarFormatoData(dataCriacaoInput)) {
-            alert('Formato inválido na Data de Criação. Use DD/MM/YYYY');
+    // Validar data de vencimento (opcional)
+    let dataVencimento = null;
+    if (dataVencimentoInput) {
+        dataVencimento = new Date(dataVencimentoInput + 'T00:00:00');
+        if (isNaN(dataVencimento.getTime())) {
+            alert('Data de Vencimento inválida.');
             return;
         }
+    }
 
-        const dataCriacao = converterDataBRParaDate(dataCriacaoInput);
-        if (!dataCriacao) {
-            alert('Data de Criação inválida.');
-            return;
-        }
+    // Calcular data de corte completa baseada no dia e no vencimento (ou hoje)
+    const dataCorte = calcularDataCorte(diaCorte, dataVencimento);
 
-        if (dataCriacao >= dataCorte) {
-            alert('A Data de Criação deve ser anterior à Data de Corte.');
-            return;
-        }
+    // CÁLCULO: Data de Backdate = Data de Corte - (Dias - 1)
+    // Por quê -1? Porque o dia de corte conta como um dos dias de pró-rata
+    const dataBackdate = new Date(dataCorte);
+    dataBackdate.setDate(dataBackdate.getDate() - (diasProRata - 1));
 
-        // Calcular dias de consumo
-        const diasConsumo = Math.floor((dataCorte - dataCriacao) / (1000 * 60 * 60 * 24));
+    // Exibir resultado
+    mostrarResultado(dataBackdate, dataCorte, dataVencimento, diasProRata);
+}
+
+// Função para calcular data de corte completa baseada no dia
+function calcularDataCorte(diaCorte, dataVencimento) {
+    // Se tiver vencimento, usar como referência
+    if (dataVencimento) {
+        const ano = dataVencimento.getFullYear();
+        const mes = dataVencimento.getMonth();
         
-        mostrarResultado(dataCriacao, dataCorte, diasConsumo, 'validacao');
-    }
-    // MODO 2: Dias de Pró-Rata informados -> Calcular data de criação/backdate
-    else if (diasProRataInput) {
-        const diasProRata = parseInt(diasProRataInput);
+        // Criar data de corte no mesmo mês/ano do vencimento
+        let dataCorte = new Date(ano, mes, diaCorte);
         
-        if (isNaN(diasProRata) || diasProRata < 1) {
-            alert('Informe um número válido de dias.');
-            return;
+        // Se a data de corte for depois do vencimento, voltar um mês
+        if (dataCorte > dataVencimento) {
+            dataCorte = new Date(ano, mes - 1, diaCorte);
         }
-
-        // Calcular data de backdate
-        const dataBackdate = new Date(dataCorte);
-        dataBackdate.setDate(dataBackdate.getDate() - diasProRata);
-
-        mostrarResultado(dataBackdate, dataCorte, diasProRata, 'calculo');
+        
+        return dataCorte;
     }
-    else {
-        alert('Preencha a Data de Criação OU os Dias de Pró-Rata.');
+    
+    // Sem vencimento, usar o próximo dia de corte a partir de hoje
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    let dataCorte = new Date(hoje.getFullYear(), hoje.getMonth(), diaCorte);
+    
+    // Se o dia de corte já passou este mês, pegar o próximo
+    if (dataCorte <= hoje) {
+        dataCorte = new Date(hoje.getFullYear(), hoje.getMonth() + 1, diaCorte);
     }
+    
+    return dataCorte;
+}
+
+// Função para calcular status da fatura
+function calcularStatusFatura(dataCorte, dataVencimento) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    const corte = new Date(dataCorte);
+    corte.setHours(0, 0, 0, 0);
+    
+    const vencimento = new Date(dataVencimento);
+    vencimento.setHours(0, 0, 0, 0);
+    
+    const diasAteVencimento = Math.floor((vencimento - hoje) / (1000 * 60 * 60 * 24));
+    
+    let status, statusClass;
+    
+    if (hoje < corte) {
+        status = '⏳ Em aberto (antes do corte)';
+        statusClass = 'status-aberto';
+    } else if (hoje >= corte && hoje < vencimento) {
+        status = '📋 Em aberto (aguardando vencimento)';
+        statusClass = 'status-aberto';
+    } else if (hoje >= vencimento) {
+        status = '❌ Vencida';
+        statusClass = 'status-vencida';
+    }
+    
+    return { status, statusClass, diasAteVencimento };
 }
 
 // Função para exibir o resultado
-function mostrarResultado(dataCriacao, dataCorte, dias, modo) {
+function mostrarResultado(dataBackdate, dataCorte, dataVencimento, diasProRata) {
     // Preencher campos de exibição
-    document.getElementById('displayCriacao').textContent = formatarDataBR(dataCriacao);
+    document.getElementById('displayBackdate').textContent = formatarDataBR(dataBackdate);
     document.getElementById('displayCorte').textContent = formatarDataBR(dataCorte);
-    document.getElementById('displayDias').textContent = `${dias} dias`;
-    document.getElementById('displayPeriodo').textContent = 
-        `${formatarDataBR(dataCriacao)} a ${formatarDataBR(dataCorte)}`;
-
-    // Atualizar explicação baseada no modo
-    const explicacao = document.getElementById('explicacaoTexto');
-    if (modo === 'validacao') {
-        explicacao.innerHTML = `
-            A massa criada em <strong>${formatarDataBR(dataCriacao)}</strong> 
-            terá <strong>${dias} dias</strong> de consumo 
-            até a data de corte (<strong>${formatarDataBR(dataCorte)}</strong>).
-        `;
+    
+    if (dataVencimento) {
+        document.getElementById('displayVencimento').textContent = formatarDataBR(dataVencimento);
     } else {
-        explicacao.innerHTML = `
-            Faça o backdate da massa em <strong>${formatarDataBR(dataCriacao)}</strong> 
-            para ter exatamente <strong>${dias} dias</strong> de consumo 
-            até a data de corte (<strong>${formatarDataBR(dataCorte)}</strong>).
-        `;
+        document.getElementById('displayVencimento').textContent = '-';
+    }
+    
+    document.getElementById('displayDias').textContent = `${diasProRata} dias`;
+    document.getElementById('displayPeriodo').textContent = 
+        `${formatarDataBR(dataBackdate)} a ${formatarDataBR(dataCorte)}`;
+
+    // Calcular e exibir status da fatura (se vencimento informado)
+    if (dataVencimento) {
+        const { status, statusClass, diasAteVencimento } = calcularStatusFatura(dataCorte, dataVencimento);
+        const statusElement = document.getElementById('displayStatus');
+        statusElement.textContent = status;
+        statusElement.className = 'value ' + statusClass;
+        
+        // Exibir dias até/desde vencimento
+        let textoVencimento;
+        if (diasAteVencimento > 0) {
+            textoVencimento = `${diasAteVencimento} dias para vencer`;
+        } else if (diasAteVencimento === 0) {
+            textoVencimento = 'Vence hoje';
+        } else {
+            textoVencimento = `${Math.abs(diasAteVencimento)} dias vencida`;
+        }
+        document.getElementById('displayDiasVencimento').textContent = textoVencimento;
+    } else {
+        document.getElementById('displayStatus').textContent = '-';
+        document.getElementById('displayDiasVencimento').textContent = '-';
     }
 
-    // Armazenar data de criação para cópia
-    btnCopiar.dataset.dataBackdate = formatarDataISO(dataCriacao);
+    // Atualizar explicação
+    document.getElementById('backdateTexto').textContent = formatarDataBR(dataBackdate);
+    document.getElementById('diasTexto').textContent = diasProRata;
+    document.getElementById('corteTexto').textContent = formatarDataBR(dataCorte);
+
+    // Armazenar data de backdate para cópia
+    btnCopiar.dataset.dataBackdate = formatarDataISO(dataBackdate);
 
     // Mostrar resultado com animação
     resultadoDiv.classList.remove('hidden');
@@ -192,30 +271,9 @@ btnCopiar.addEventListener('click', copiarDataBackdate);
 
 // Definir valores padrão
 window.addEventListener('DOMContentLoaded', () => {
-    // Exemplo padrão: Data de corte em 05/03/2026
-    const dataCorteExemplo = new Date(2026, 2, 5); // 05/03/2026
-    document.getElementById('dataCorte').value = formatarDataBR(dataCorteExemplo);
-    
-    // Exemplo padrão: 5 dias de pró-rata
-    document.getElementById('diasProRata').value = '5';
-    
-    // Adicionar listeners para máscara de data
-    const inputCriacao = document.getElementById('dataCriacao');
-    const inputCorte = document.getElementById('dataCorte');
-    
-    inputCriacao.addEventListener('input', (e) => aplicarMascaraData(e.target));
-    inputCorte.addEventListener('input', (e) => aplicarMascaraData(e.target));
-    
-    // Limpar o outro campo quando um for preenchido
-    document.getElementById('dataCriacao').addEventListener('input', function() {
-        if (this.value.length > 0) {
-            document.getElementById('diasProRata').value = '';
-        }
-    });
-    
-    document.getElementById('diasProRata').addEventListener('input', function() {
-        if (this.value.length > 0) {
-            document.getElementById('dataCriacao').value = '';
-        }
-    });
+    // Exemplo padrão baseado no cenário do usuário:
+    // Dia de corte: 3, 10 dias de pró-rata, Vencimento: 13/06/2026
+    document.getElementById('diaCorte').value = '3';
+    document.getElementById('diasProRata').value = '10';
+    document.getElementById('dataVencimento').value = '2026-06-13';
 });

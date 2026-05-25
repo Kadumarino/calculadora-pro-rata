@@ -180,6 +180,28 @@ header h1 {
     color: #4caf50;
 }
 
+.status-row {
+    background: #f0f4ff;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.status-aberto {
+    color: #2196f3 !important;
+    font-weight: 600;
+}
+
+.status-vencida {
+    color: #f44336 !important;
+    font-weight: 600;
+}
+
+.status-paga {
+    color: #4caf50 !important;
+    font-weight: 600;
+}
+
 .resultado-footer {
     padding: 25px;
     background: #f8f9ff;

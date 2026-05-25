@@ -16,38 +16,25 @@
         <div class="card">
             <form id="proRataForm">
                 <div class="form-group">
-                    <label for="dataCriacao">
-                        🕐 Data de Criação da Massa (Opcional)
-                        <span class="tooltip">Quando a massa nasceu - deixe em branco para calcular (DD/MM/YYYY)</span>
+                    <label for="diaCorte">
+                        📅 Dia de Corte da Fatura
+                        <span class="tooltip">Dia do mês quando a fatura fecha (1-31)</span>
                     </label>
                     <input 
-                        type="text" 
-                        id="dataCriacao" 
-                        name="dataCriacao" 
-                        placeholder="DD/MM/YYYY"
-                        maxlength="10"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="dataCorte">
-                        📅 Data de Corte da Fatura
-                        <span class="tooltip">Quando a fatura fecha (DD/MM/YYYY)</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="dataCorte" 
-                        name="dataCorte" 
-                        placeholder="DD/MM/YYYY"
-                        maxlength="10"
+                        type="number" 
+                        id="diaCorte" 
+                        name="diaCorte" 
+                        min="1"
+                        max="31"
+                        placeholder="Ex: 3"
                         required
                     >
                 </div>
 
                 <div class="form-group">
                     <label for="diasProRata">
-                        🔢 Dias de Pró-Rata (Opcional)
-                        <span class="tooltip">Quantos dias de consumo - deixe em branco se informou data de criação</span>
+                        🔢 Dias de Pró-Rata Desejados
+                        <span class="tooltip">Quantos dias de consumo você quer simular</span>
                     </label>
                     <input 
                         type="number" 
@@ -55,7 +42,20 @@
                         name="diasProRata" 
                         min="1"
                         max="365"
-                        placeholder="Ex: 5"
+                        placeholder="Ex: 10"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="dataVencimento">
+                        📆 Data de Vencimento (Opcional)
+                        <span class="tooltip">Para referência e cálculo de status</span>
+                    </label>
+                    <input 
+                        type="date" 
+                        id="dataVencimento" 
+                        name="dataVencimento"
                     >
                 </div>
 
@@ -70,32 +70,45 @@
                 <h2>✅ Resultado</h2>
             </div>
             <div class="resultado-body">
-                <div class="info-row">
-                    <span class="label">Data de Criação/Backdate:</span>
-                    <span class="value highlight-value" id="displayCriacao">-</span>
+                <div class="info-row highlight">
+                    <span class="label">📍 Data de Backdate:</span>
+                    <span class="value bold" id="displayBackdate">-</span>
                 </div>
+                <div class="divider"></div>
                 <div class="info-row">
                     <span class="label">Data de Corte:</span>
                     <span class="value" id="displayCorte">-</span>
                 </div>
-                <div class="divider"></div>
-                <div class="info-row highlight">
-                    <span class="label">📍 Dias de Consumo (Pró-Rata):</span>
-                    <span class="value bold" id="displayDias">-</span>
+                <div class="info-row">
+                    <span class="label">Data de Vencimento:</span>
+                    <span class="value" id="displayVencimento">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Dias de Pró-Rata:</span>
+                    <span class="value" id="displayDias">-</span>
                 </div>
                 <div class="info-row">
                     <span class="label">Período de Faturamento:</span>
                     <span class="value" id="displayPeriodo">-</span>
                 </div>
+                <div class="divider"></div>
+                <div class="info-row status-row" id="statusRow">
+                    <span class="label">📊 Status da Fatura:</span>
+                    <span class="value" id="displayStatus">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Dias até/desde Vencimento:</span>
+                    <span class="value" id="displayDiasVencimento">-</span>
+                </div>
             </div>
             <div class="resultado-footer">
-                <p class="explicacao" id="explicacaoTexto">
+                <p class="explicacao">
                     Faça o backdate da massa em <strong id="backdateTexto">-</strong> 
-                    para ter exatamente <strong id="diasTexto">-</strong> dias de consumo 
+                    para ter <strong id="diasTexto">-</strong> dias de pró-rata 
                     até a data de corte (<strong id="corteTexto">-</strong>).
                 </p>
                 <button type="button" class="btn-copiar" id="btnCopiar">
-                    📋 Copiar Data de Criação/Backdate
+                    📋 Copiar Data de Backdate
                 </button>
             </div>
         </div>
