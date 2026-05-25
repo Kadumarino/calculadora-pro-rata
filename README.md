@@ -2,6 +2,8 @@
 
 Ferramenta web para calcular a data de backdate ideal em massa de testes de sistemas de faturamento, com análise de status da fatura.
 
+🌐 **[Acesse a calculadora online](https://kadumarino.github.io/calculadora-pro-rata/)**
+
 ## 🎯 Objetivo
 
 Calcular a **data de backdate** necessária para que uma massa de testes tenha exatamente **X dias de consumo**, considerando o dia de corte e a data de vencimento da fatura.
