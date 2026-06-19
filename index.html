@@ -3,120 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Pro-Rata - Massa de Testes</title>
+    <title>Calculadora Pro-Rata — Massa de Testes</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📊 Calculadora Pro-Rata</h1>
-            <p class="subtitle">Calcule quando fazer o backdate para simular dias de pró-rata</p>
-        </header>
 
+    <!-- Hero -->
+    <header class="page-hero">
+        <div class="hero-badge"><span>🧪</span> QA · Faturamento</div>
+        <h1>Calculadora <em>Pro-Rata</em></h1>
+        <p>Gere os dois backdates para simular migração com os dias corretos de pró-rata na fatura.</p>
+    </header>
+
+    <main class="page-body">
+
+        <!-- Formulário -->
         <div class="card">
+            <div class="fluxo-info">
+                <div class="fluxo-step">
+                    <span class="fluxo-num">1</span>
+                    Backdate → Fim do Ciclo
+                </div>
+                <span class="fluxo-arrow">→</span>
+                <div class="fluxo-step">
+                    <span class="fluxo-num">2</span>
+                    Backdate → Nascimento
+                </div>
+                <span class="fluxo-arrow">→</span>
+                <div class="fluxo-step">
+                    <span class="fluxo-num ok">✓</span>
+                    Fatura com X dias
+                </div>
+            </div>
+
             <form id="proRataForm">
-                <div class="form-group">
-                    <label for="diaCorte">
-                        📅 Dia de Corte da Fatura
-                        <span class="tooltip">Dia do mês quando a fatura fecha (1-31)</span>
-                    </label>
-                    <input 
-                        type="number" 
-                        id="diaCorte" 
-                        name="diaCorte" 
-                        min="1"
-                        max="31"
-                        placeholder="Ex: 3"
-                        required
-                    >
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dataInicioCiclo">
+                            Início do Ciclo
+                            <span class="tooltip">Data de abertura da fatura</span>
+                        </label>
+                        <input type="date" id="dataInicioCiclo" name="dataInicioCiclo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataFimCiclo">
+                            Fim do Ciclo (Corte)
+                            <span class="tooltip">Base do cálculo — fim do período de faturamento</span>
+                        </label>
+                        <input type="date" id="dataFimCiclo" name="dataFimCiclo" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="diasProRata">
-                        🔢 Dias de Pró-Rata Desejados
-                        <span class="tooltip">Quantos dias de consumo você quer simular</span>
+                        Dias de Pró-Rata Desejados
+                        <span class="tooltip">Quantos dias de consumo da migração devem aparecer na fatura</span>
                     </label>
-                    <input 
-                        type="number" 
-                        id="diasProRata" 
-                        name="diasProRata" 
-                        min="1"
-                        max="365"
-                        placeholder="Ex: 10"
-                        required
-                    >
+                    <input type="number" id="diasProRata" name="diasProRata" min="1" max="365" placeholder="Ex: 15" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="dataVencimento">
-                        📆 Data de Vencimento (Opcional)
-                        <span class="tooltip">Para referência e cálculo de status</span>
-                    </label>
-                    <input 
-                        type="date" 
-                        id="dataVencimento" 
-                        name="dataVencimento"
-                    >
-                </div>
-
-                <button type="submit" class="btn-calcular">
-                    ⚡ Calcular
-                </button>
+                <button type="submit" class="btn-calcular">⚡ Calcular Backdates</button>
             </form>
         </div>
 
+        <!-- Resultado -->
         <div id="resultado" class="resultado hidden">
-            <div class="resultado-header">
-                <h2>✅ Resultado</h2>
-            </div>
-            <div class="resultado-body">
-                <div class="info-row highlight">
-                    <span class="label">📍 Data de Backdate:</span>
-                    <span class="value bold" id="displayBackdate">-</span>
-                </div>
-                <div class="divider"></div>
-                <div class="info-row">
-                    <span class="label">Data de Corte:</span>
-                    <span class="value" id="displayCorte">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Data de Vencimento:</span>
-                    <span class="value" id="displayVencimento">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Dias de Pró-Rata:</span>
-                    <span class="value" id="displayDias">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Período de Faturamento:</span>
-                    <span class="value" id="displayPeriodo">-</span>
-                </div>
-                <div class="divider"></div>
-                <div class="info-row status-row" id="statusRow">
-                    <span class="label">📊 Status da Fatura:</span>
-                    <span class="value" id="displayStatus">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Dias até/desde Vencimento:</span>
-                    <span class="value" id="displayDiasVencimento">-</span>
-                </div>
-            </div>
-            <div class="resultado-footer">
-                <p class="explicacao">
-                    Faça o backdate da massa em <strong id="backdateTexto">-</strong> 
-                    para ter <strong id="diasTexto">-</strong> dias de pró-rata 
-                    até a data de corte (<strong id="corteTexto">-</strong>).
-                </p>
-                <button type="button" class="btn-copiar" id="btnCopiar">
-                    📋 Copiar Data de Backdate
-                </button>
-            </div>
-        </div>
 
-        <footer>
-            <p>💡 Desenvolvido para facilitar a criação de massa de testes em sistemas de faturamento</p>
-        </footer>
-    </div>
+            <!-- Passos lado a lado -->
+            <div class="passos-grid">
+                <div class="passo-card passo-1">
+                    <div class="passo-titulo">
+                        <span class="passo-badge">Passo 1</span>
+                        Backdate de Migração
+                    </div>
+                    <div class="passo-data" id="displayBackdateMigracao">-</div>
+                    <p class="passo-instrucao">Coloque o sistema nesta data (= fim do ciclo) e execute a migração do cliente.</p>
+                    <button type="button" class="btn-copiar-passo" id="btnCopiarMigracao">📋 Copiar data</button>
+                </div>
+
+                <div class="passo-card passo-2">
+                    <div class="passo-titulo">
+                        <span class="passo-badge">Passo 2</span>
+                        Backdate de Nascimento
+                    </div>
+                    <div class="passo-data" id="displayBackdateNascimento">-</div>
+                    <p class="passo-instrucao">Retroaja para esta data. O cliente nasce aqui — período de pró-rata começa neste dia.</p>
+                    <button type="button" class="btn-copiar-passo" id="btnCopiarNascimento">📋 Copiar data</button>
+                </div>
+            </div>
+
+            <!-- Teste de Mesa -->
+            <div class="teste-mesa">
+                <div class="teste-mesa-titulo">🧮 Teste de Mesa</div>
+                <div class="calculo-linha">
+                    <span class="calculo-label">Ciclo da fatura</span>
+                    <span class="calculo-valor" id="tmCiclo">-</span>
+                </div>
+                <div class="calculo-linha">
+                    <span class="calculo-label">Total de dias no ciclo</span>
+                    <span class="calculo-valor" id="tmTotalDias">-</span>
+                </div>
+                <div class="calculo-linha destaque">
+                    <span class="calculo-label">Fórmula aplicada</span>
+                    <span class="calculo-valor" id="tmFormula">-</span>
+                </div>
+                <div class="calculo-linha destaque-verde">
+                    <span class="calculo-label">✅ Backdate nascimento</span>
+                    <span class="calculo-valor bold" id="tmBackdate">-</span>
+                </div>
+                <div class="calculo-linha">
+                    <span class="calculo-label">Período pró-rata</span>
+                    <span class="calculo-valor" id="tmPeriodo">-</span>
+                </div>
+                <div class="calculo-linha destaque-verde">
+                    <span class="calculo-label">✅ Dias na fatura</span>
+                    <span class="calculo-valor bold" id="tmDias">-</span>
+                </div>
+            </div>
+
+            <!-- Prova -->
+            <div class="resultado-footer">
+                <div class="section-label">Prova real</div>
+                <p class="explicacao" id="explicacaoTexto"></p>
+            </div>
+
+        </div>
+        <!-- /Resultado -->
+
+    </main>
+
+    <footer class="page-footer">
+        💡 Desenvolvido para facilitar a criação de massa de testes em sistemas de faturamento
+    </footer>
 
     <script src="script.js"></script>
 </body>
